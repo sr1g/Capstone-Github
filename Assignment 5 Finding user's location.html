@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Finding Latitude and Longitude along the route</title>
+    <style>
+      html, body, #map-canvas { height: 100%; min-height: 600px; min-width: 700px; margin: 0px; padding: 0px }
+      #map-canvas { height: 50%; }
+      #panel { position: absolute; top: 5px; left: 50%; margin-left: -180px; z-index: 5; background-color: #fff; padding: 5px; border: 1px solid #999; }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+</head>
+<body>
+    <div id="panel">
+      <label>Strats From:
+          <input id="origin" type="text" value="">
+      </label>
+      <label>Destination:
+          <input id="destination" type="text" value="">
+      </label>
+      <input type="button" value="Find Route" onclick="calcRoute()">
+	  </br>
+	  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	  <input type="button" value="Your Location" onclick="test1()">
+    </div>
+    <div id="map-canvas"></div>
+    
+    <script type="text/javascript">
+	
+	//For findig your location
+	
+	
+	 var geocoder;
+
+  if (navigator.geolocation) 
+  {
+    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+	
+  } 
+//Get the latitude and the longitude;
+	function successFunction(position) 
+	{
+
+		var lat = position.coords.latitude;
+		var lng = position.coords.longitude;
+		codeLatLng(lat, lng)
+	}
+
+	function errorFunction()
+	{
+    alert("Geocoder failed");
+	}
+	
+	
+  function test1()
+  {
+       geocoder = new google.maps.Geocoder();	
+  }
+
+    function codeLatLng(lat, lng) 
+	{
+
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+      console.log(results)
+        if (results[1]) {
+         //formatted address
+         //alert(results[0].formatted_address)
+		 document.getElementById('origin').value=results[0].formatted_address;
+        //find country name
+       //      for (var i=0; i<results[0].address_components.length; i++) {
+         //   for (var b=0;b<results[0].address_components[i].types.length;b++) {
+
+            //there are different types that might hold a city admin_area_lvl_1 usually does in come cases looking for sublocality type will be more appropriate
+           //     if (results[0].address_components[i].types[b] == "administrative_area_level_1") {
+                    //this is the object you are looking for
+             //       city= results[0].address_components[i];
+               //     break;
+                //}
+            //}
+        //}
+        //city data
+        
+
+
+        } else {
+          alert("No results found");
+        }
+      } else {
+        alert("Geocoder failed due to: " + status);
+      }
+    });
+  }
+	
+	
+	
+	//end here for findig your location
+	
+	
+        var directionsDisplays = [];
+        var directionsService = new google.maps.DirectionsService();
+        var map;
+		var ap=[];
+
+        function initialize() {
+
+            var mapOptions = {
+                zoom: 7,
+                center: new google.maps.LatLng(48.85727000, 2.35238)
+            };
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        }
+
+        function calcRoute() {
+            var start = document.getElementById('origin').value;
+            var end = document.getElementById('destination').value;
+            var request = {
+                origin: start,
+                destination: end,
+                provideRouteAlternatives: true,
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+            directionsService.route(request, function (response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    if (response.routes && response.routes.length > 0) {
+                        var routes = response.routes;
+                        for (var j = 0; j < routes.length; j++) {
+						
+						   if(j==0)
+						   {
+                            var directionsDisplay = new google.maps.DirectionsRenderer({ map: map, directions: response, routeIndex: j ,polylineOptions: {strokeColor: "blue"}});
+                           }
+						   if(j==1)
+						   {
+                            var directionsDisplay = new google.maps.DirectionsRenderer({ map: map, directions: response, routeIndex: j ,polylineOptions: {strokeColor: "green"}});
+                           }
+						   if(j==2)
+						   {
+                            var directionsDisplay = new google.maps.DirectionsRenderer({ map: map, directions: response, routeIndex: j ,polylineOptions: {strokeColor: "red"}});
+                           }
+							directionsDisplays.push(directionsDisplay);
+                            var points = routes[j].overview_path;
+                            var ul = document.getElementById("vertex");
+                            for (var i = 0; i < points.length; i++) {                                
+								getLatLongText(points[i]);                                
+                            }
+							ap.push("The Next Path Geolocations are:")
+                        }
+						alert(ap.toString());
+                    }
+                }
+            });
+        }
+        function getLatLongText(point) {
+            var lat = point.lat(),
+                lng = point.lng();
+				ap.push(lat);
+				ap.push(lng);
+            
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+</body>
+</html>
