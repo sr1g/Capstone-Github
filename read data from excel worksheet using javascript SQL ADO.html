@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>Read from Excel or Access</title>
+        <script language="JavaScript">
+
+
+        function getCount()
+        {
+            var cn = new ActiveXObject("ADODB.Connection");
+	    var strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source = E:\\Data Science\\670-Capstone\\Accessing data from Excel using javascript\\demo.xls;Persist Security Info=False;Extended Properties=Excel 8.0;";
+            cn.Open(strConn);
+            var rs = new ActiveXObject("ADODB.Recordset");
+	    var SQL = "select * from [my_table_name$]  ";
+            rs.Open(SQL, cn);
+			if(rs.bof)
+			{
+				document.write('No records available for this query');
+			}
+
+			if(!rs.bof)
+			{
+				rs.MoveFirst()
+				while(!rs.eof)
+				{
+				alert(rs.fields.count);
+					for(var i=0; i!= rs.fields.count; ++i)
+					{
+						
+						document.write(rs.fields(i).value + ", ");
+					}
+					document.write("<br />");
+					rs.MoveNext()
+				}
+			}
+			rs.Close();
+			cn.Close();
+
+        }
+        </script>
+    </head>
+    <body>
+        <input type="button" value="Get count" onclick="getCount()">
+    </body>
+</html>
